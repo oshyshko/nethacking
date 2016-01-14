@@ -71,7 +71,7 @@ public class Pcap {
                     return dev;
 
             throw new IllegalArgumentException("Can't find interface with name: " + iface +
-                    ". Available interface are: " +
+                    ". Available interfaces are: " +
                     interfaces().stream().map(PcapNetworkInterface::getName).collect(Collectors.toList()));
         } catch (PcapNativeException e) {
             throw new RuntimeException(e);
