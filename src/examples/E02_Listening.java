@@ -9,10 +9,10 @@ import java.io.IOException;
 public class E02_Listening {
 
     public static void main(String[] args) throws IOException {
-        // NOTE replace "en0" bellow with an interface name that exists on your system
+        // NOTE replace "en0" bellow with interface name that exists on your system
         //
-        // See: Pcap.interfaces()
         // See: output of "ifconfig" command on UNIX-like or "ipconfig" on Windows
+        // See: method Pcap.interfaces()
 
         System.out.println("Listening...");
 
@@ -22,10 +22,12 @@ public class E02_Listening {
             }
         });
 
-        System.err.println("Press enter to shutdown");
+        System.err.println("Press enter to close");
         System.in.read();
 
         c.close();
+
+        System.out.println("Done.");
 
         // NOTE: the same code, but with new Java 8 lambda syntax
         //

@@ -8,7 +8,6 @@ import java.io.Closeable;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class Pcap {
@@ -74,8 +73,8 @@ public class Pcap {
                     return dev;
 
             throw new IllegalArgumentException("Can't find interface with name: " + iface +
-                    ". Available interface are: " + interfaces().stream()
-                    .map(PcapNetworkInterface::getName).collect(Collectors.toList()));
+                    ". Available interface are: " +
+                    interfaces().stream().map(PcapNetworkInterface::getName).collect(Collectors.toList()));
         } catch (PcapNativeException e) {
             throw new RuntimeException(e);
         }

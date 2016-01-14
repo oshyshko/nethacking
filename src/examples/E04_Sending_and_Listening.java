@@ -20,13 +20,11 @@ public class E04_Sending_and_Listening {
         // listening
         System.out.println("Listening...");
 
-        Closeable c  = Pcap.listen("en0", new Pcap.Listener() {
-            public void onPacket(byte[] bytes) {
-                if (Arrays.equals(bytes, packet)) {
-                    System.out.println("<<< GOT OUR PACKET!");
-                } else {
-                    System.out.println("<<< got someone else's packet");
-                }
+        Closeable c  = Pcap.listen("en0", bytes -> {
+            if (Arrays.equals(bytes, packet)) {
+                System.out.println("<<< GOT OUR PACKET!");
+            } else {
+                System.out.println("<<< got someone else's packet");
             }
         });
 
