@@ -22,21 +22,24 @@ public class Pcap {
     private static final int READ_TIMEOUT   = 10;       // ms
     private static final int COUNT          = 1;
 
-    //private static final Map<String, NIF> iface2impl = new HashMap<String, NIF>();
-
     public static Closeable listen(String iface, Listener l) {
         return listen(iface, null, l);
     }
     public static Closeable listen(String iface, String filter, Listener l) {
+        PcapHandle _recv = null;
+        ExecutorService _pool = null;
+
         try {
             PcapNetworkInterface pnif = findPnif(iface);
 
             PcapHandle recv = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
+            _recv = recv;
 
             if (null != filter)
                 recv.setFilter(filter, BpfProgram.BpfCompileMode.OPTIMIZE);
 
-            ExecutorService pool  = Executors.newSingleThreadExecutor();
+            ExecutorService pool = Executors.newSingleThreadExecutor();
+            _pool = pool;
 
             // pump events
             pool.execute(() -> {
@@ -55,16 +58,11 @@ public class Pcap {
                 if (recv.isOpen()) recv.close();
             };
         } catch (Exception e) {
+            if (_pool != null) _pool.shutdown();
+            if (_recv != null && _recv.isOpen()) _recv.close();
             throw new RuntimeException(e);
         }
     }
-
-    //private static NIF getOrCreate(String iface) throws PcapNativeException {
-    //    if (!iface2impl.containsKey(iface))
-    //        iface2impl.put(iface, new NIF(iface));
-    //
-    //    return iface2impl.get(iface);
-    //}
 
     private static PcapNetworkInterface findPnif(String iface)  {
         try {
@@ -80,13 +78,16 @@ public class Pcap {
         }
     }
 
-    public static synchronized void send(String iface, byte[] bytes) {
+    public static void send(String iface, byte[] bytes) {
+        PcapHandle send = null;
         try {
             PcapNetworkInterface pnif = findPnif(iface);
-            PcapHandle send = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
+            send = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
             send.sendPacket(UnknownPacket.newPacket(bytes, 0, bytes.length));
         } catch (PcapNativeException | NotOpenException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (send != null && send.isOpen()) send.close();
         }
 
     }
