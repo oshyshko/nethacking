@@ -13,6 +13,7 @@
     mvn install
 
     mvn exec:java -Dexec.mainClass="examples.E01_Interfaces"
-    mvn exec:java -Dexec.mainClass="examples.E02_Listening"
-    mvn exec:java -Dexec.mainClass="examples.E03_Sending"
-    mvn exec:java -Dexec.mainClass="examples.E04_Sending_and_Listening"
+    mvn exec:java -Dexec.mainClass="examples.E04_Listen"
+    mvn exec:java -Dexec.mainClass="examples.E02_Send"
+    mvn exec:java -Dexec.mainClass="examples.E03_Send_ARP"
+    mvn exec:java -Dexec.mainClass="examples.E05_Listen_and_Send"

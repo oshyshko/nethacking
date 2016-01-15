@@ -5,6 +5,12 @@ import pcap.Pcap;
 
 public class E01_Interfaces {
     public static void main(String[] args) {
+        // Use the command bellow to see available interfaces in your OS:
+        // $ ifconfig -a
+        //
+        // On Windows, use:
+        // $ ipconfig /all
+
         System.out.println("Found " + Pcap.interfaces().size() + " interfaces");
         System.out.println();
 

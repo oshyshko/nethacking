@@ -58,29 +58,34 @@ public class Tester {
             System.out.println("NOTE: you may select another interface with: java -jar tester2.jar <interface-number>");
             System.out.println();
 
-            byte[] packetBroken = Bytes.fromHex(   // Ethernet packet:
-                            "01 02 03 04 05 06" +  // - destination
-                            "07 08 09 0a 0b 0c" +  // - source
-                            "0d 0e"                // - type
+            byte[] packetBroken = Convert.hex2bytes( // Ethernet packet:
+                            "01 02 03 04 05 06",     // - destination
+                            "07 08 09 0a 0b 0c",     // - source
+                            "0d 0e"                  // - type
             );
 
-            String sourceMac = Bytes.toHex(pnif.getLinkLayerAddresses().get(0).getAddress());
+            String sourceMac = Convert.bytes2hex(pnif.getLinkLayerAddresses().get(0).getAddress());
+            String sourceIp  = Convert.dec2hex("1.2.3.4");
+            String targetMac = "ff:ff:ff ff:ff:ff";
+            String targetIp  = Convert.dec2hex("5.6.7.8");
 
-            byte[] packet = Bytes.fromHex(  // ----- Ethernet
-                    "ff ff ff ff ff ff" +   // Destination: ff:ff:ff:ff:ff:ff
-                     sourceMac +            // Source: __:__:__:__:__:__
-                    "08 06" +               // Type: ARP (0x0806)
-                                            // ----- ARP
-                    "00 01" +               // Hardware type: Ethernet (1)
-                    "08 00" +               // Protocol type: IPv4 (0x0800)
-                    "06" +                  // Hardware size: 6
-                    "04" +                  // Protocol size: 4
-                    "00 01" +               // Opcode: request (1)
-                    sourceMac +             // Sender MAC address: __:__:__:__:__:__
-                    "01 02 03 04" +         // Sender IP address: 1.2.3.4
-                    "00 00 00 00 00 00" +   // Target MAC address: 00:00:00:00:00:00
-                    "05 06 07 08"           // Target IP address: 5.6.7.8
+            byte[] packet = Convert.hex2bytes( // ----- Ethernet
+                    targetMac,                 // Destination: 6 bytes
+                    sourceMac,                 // Source: 6 bytes
+                    "08 06",                   // Type: ARP (0x0806)
+                                               // ----- ARP
+                    "00 01",                   // Hardware type: Ethernet (1)
+                    "08 00",                   // Protocol type: IPv4 (0x0800)
+                    "06",                      // Hardware size: 6
+                    "04",                      // Protocol size: 4
+                    "00 01",                   // Opcode: request (1)
+                    sourceMac,                 // Sender MAC address: 6 bytes
+                    sourceIp,                  // Sender IP address:  4 bytes
+                    targetMac,                 // Target MAC address: 6 bytes
+                    targetIp                   // Target IP address:  4 bytes
             );
+
+
 
             System.out.println("Listening...");
             Closeable c = Pcap.listen(pnif.getName(), bytes -> {
