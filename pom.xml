@@ -16,7 +16,7 @@
   <scm>
     <connection>scm:git:git://github.com/oshyshko/nethacking.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/oshyshko/nethacking.git</developerConnection>
-    <tag>324d76ff3e229636e5e8a251cb10a0c39ed0acad
+    <tag>0b0726b98c1fe5ce08f84c0c6f8185ce573c38f6
 </tag>
     <url>https://github.com/oshyshko/nethacking</url>
   </scm>
@@ -44,6 +44,25 @@
           <source>1.8</source>
           <target>1.8</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>1.7</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -79,6 +98,12 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>1.7.12</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

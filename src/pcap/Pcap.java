@@ -12,10 +12,7 @@ import java.util.stream.Collectors;
 
 public class Pcap {
     static {
-        // muting slf4j. Override by setting your value for "org.slf4j.simpleLogger.defaultLogLevel"
-        if (!System.getProperties().contains(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
-            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
-        }
+        _muteSlf4j();
     }
 
     private static final int SNAPLEN        = 65536;    // bytes
@@ -64,20 +61,6 @@ public class Pcap {
         }
     }
 
-    private static PcapNetworkInterface findPnif(String iface)  {
-        try {
-            for (PcapNetworkInterface dev : Pcaps.findAllDevs())
-                if (iface.equals(dev.getName()))
-                    return dev;
-
-            throw new IllegalArgumentException("Can't find interface with name: " + iface +
-                    ". Available interfaces are: " +
-                    interfaces().stream().map(PcapNetworkInterface::getName).collect(Collectors.toList()));
-        } catch (PcapNativeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public static void send(String iface, byte[] bytes) {
         PcapHandle send = null;
         try {
@@ -102,5 +85,26 @@ public class Pcap {
 
     public interface Listener {
         void onPacket(byte[] bytes);
+    }
+
+    public static void _muteSlf4j() {
+        // muting slf4j. Override by setting your value for "org.slf4j.simpleLogger.defaultLogLevel"
+        if (!System.getProperties().contains(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
+            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
+        }
+    }
+
+    private static PcapNetworkInterface findPnif(String iface)  {
+        try {
+            for (PcapNetworkInterface dev : Pcaps.findAllDevs())
+                if (iface.equals(dev.getName()))
+                    return dev;
+
+            throw new IllegalArgumentException("Can't find interface with name: " + iface +
+                    ". Available interfaces are: " +
+                    interfaces().stream().map(PcapNetworkInterface::getName).collect(Collectors.toList()));
+        } catch (PcapNativeException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

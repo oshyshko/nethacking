@@ -3,14 +3,14 @@ package pcap;
 import org.pcap4j.util.ByteArrays;
 
 public class Bytes {
-    private static final char[] hexArray = "0123456789ABCDEF".toCharArray();
+    private static final char[] hexArray = "0123456789abcdef".toCharArray();
 
     public static String toHex(byte[] bytes) {
         return ByteArrays.toHexString(bytes, " ");
     }
 
     public static byte[] fromHex(String s) {
-        s = s.replaceAll("\\s", "");
+        s = s.replaceAll("[^0-9a-fA-F]", "");
         int len = s.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
