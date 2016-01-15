@@ -7,16 +7,18 @@ import org.pcap4j.core.Pcaps;
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 public class Tester {
     public static void main(String[] args) throws PcapNativeException, IOException {
-        AtomicBoolean gotOwn    = new AtomicBoolean();
-        AtomicBoolean gotOthers = new AtomicBoolean();
+        AtomicBoolean gotOthers     = new AtomicBoolean();
+        AtomicBoolean gotOwn        = new AtomicBoolean();
+        AtomicBoolean gotOwnBroken  = new AtomicBoolean();
+
         try {
             Pcap._muteSlf4j();
-
+            System.out.println("# Pcap Tester 2");
 
             for (String k : new String[]{
                     "os.name",
@@ -25,49 +27,84 @@ public class Tester {
                     "java.vendor",
                     "java.vm.name",
                     "sun.arch.data.model",
-                    "sun.java.command",
-            }) {
+                    "sun.java.command",})
                 System.out.println(k + " = " + System.getProperty(k));
-            }
 
             System.out.println();
-
             System.out.println("Pcap library: " + Pcaps.libVersion());
-            System.out.println("Found interfaces: " + Pcaps.findAllDevs().stream().map(PcapNetworkInterface::getName).collect(Collectors.toList()));
-
             System.out.println();
 
             if (Pcaps.findAllDevs().isEmpty()) {
-                System.out.println("No interfaces? Try running with \"sudo\".");
-                System.exit(1);
+                System.out.println("No interfaces found. Try running with \"sudo\".");
+                return;
             }
 
             PcapNetworkInterface pnif = args.length == 0
                     ? Pcaps.findAllDevs().get(0)
-                    : Pcaps.getDevByName(args[0]);
+                    : Pcaps.findAllDevs().get((Integer.parseInt(args[0]) - 1));
 
-            System.out.println("Testing for interface \"" + pnif.getName() + "\"");
+            System.out.println("Found interfaces:");
+            List<PcapNetworkInterface> pnifs = Pcaps.findAllDevs();
+            for (int i = 0; i < pnifs.size(); i++) {
+                PcapNetworkInterface p = pnifs.get(i);
+                System.out.println(
+                        (pnif.equals(p) ? " --> " : "     ") +
+                        (i + 1) + ". " + p.getName() +
+                        (p.getDescription() == null ? "" : (" -- " + p.getDescription())));
 
-            byte[] packet = Bytes.fromHex(         // Ethernet packet:
+            }
+
+            System.out.println();
+            System.out.println("NOTE: you may select another interface with: java -jar tester2.jar <interface-number>");
+            System.out.println();
+
+            byte[] packetBroken = Bytes.fromHex(   // Ethernet packet:
                             "01 02 03 04 05 06" +  // - destination
                             "07 08 09 0a 0b 0c" +  // - source
                             "0d 0e"                // - type
             );
 
+            String sourceMac = Bytes.toHex(pnif.getLinkLayerAddresses().get(0).getAddress());
+
+            byte[] packet = Bytes.fromHex(  // ----- Ethernet
+                    "ff ff ff ff ff ff" +   // Destination: ff:ff:ff:ff:ff:ff
+                     sourceMac +            // Source: __:__:__:__:__:__
+                    "08 06" +               // Type: ARP (0x0806)
+                                            // ----- ARP
+                    "00 01" +               // Hardware type: Ethernet (1)
+                    "08 00" +               // Protocol type: IPv4 (0x0800)
+                    "06" +                  // Hardware size: 6
+                    "04" +                  // Protocol size: 4
+                    "00 01" +               // Opcode: request (1)
+                    sourceMac +             // Sender MAC address: __:__:__:__:__:__
+                    "01 02 03 04" +         // Sender IP address: 1.2.3.4
+                    "00 00 00 00 00 00" +   // Target MAC address: 00:00:00:00:00:00
+                    "05 06 07 08"           // Target IP address: 5.6.7.8
+            );
+
             System.out.println("Listening...");
             Closeable c = Pcap.listen(pnif.getName(), bytes -> {
-                if (Arrays.equals(bytes, packet)) {
-                    gotOwn.set(true);
-                } else {
-                    gotOthers.set(true);
-                }
+                if      (Arrays.equals(bytes, packet))       gotOwn.set(true);
+                else if (Arrays.equals(bytes, packetBroken)) gotOwnBroken.set(true);
+                else                                         gotOthers.set(true);
             });
 
             System.out.println("Sending...");
-            Pcap.send(pnif.getName(), packet);
+            try {
+                Pcap.send(pnif.getName(), packet);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            System.out.println("Sending (broken)...");
+            try {
+                Pcap.send(pnif.getName(), packetBroken);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             for (int i = 0; i < 50; i++) {
-                if (gotOwn.get() && gotOthers.get())
+                if (gotOthers.get() && gotOwn.get() && gotOwnBroken.get())
                     break;
                 System.out.print(".");
                 System.out.flush();
@@ -77,15 +114,21 @@ public class Tester {
         } catch (Throwable t) {
             t.printStackTrace();
         } finally {
-            boolean ok = gotOwn.get() && gotOthers.get();
-
             System.out.println();
-            System.out.println("Intercepted own packet:     " + gotOwn.get());
-            System.out.println("Intercepted other's packet: " + gotOthers.get());
+            System.out.println("Intercepted other's packet:      " + gotOthers.get());
+            System.out.println("Intercepted own packet:          " + gotOwn.get());
+            System.out.println("Intercepted own packet (broken): " + gotOwnBroken.get());
             System.out.println();
-            System.out.println(ok ? "OK" : "ERROR");
 
-            System.exit(ok ? 0 : 1);
+            if (gotOthers.get() && gotOwn.get() && gotOwnBroken.get()) {
+                System.out.println("OK");
+            } else if (gotOthers.get() && gotOwn.get() && !gotOwnBroken.get()) {
+                System.out.println("OK (your OS doesn't allow sending broken packets, but that's still ok)");
+            } else {
+                System.out.println("ERROR");
+            }
+
+            System.exit(0);
         }
     }
 }
