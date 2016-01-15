@@ -27,7 +27,7 @@ public class Pcap {
         ExecutorService _pool = null;
 
         try {
-            PcapNetworkInterface pnif = findPnif(iface);
+            PcapNetworkInterface pnif = get(iface);
 
             PcapHandle recv = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
             _recv = recv;
@@ -62,9 +62,11 @@ public class Pcap {
     }
 
     public static void send(String iface, byte[] bytes) {
+        send(get(iface), bytes);
+    }
+    public static void send(PcapNetworkInterface pnif, byte[] bytes) {
         PcapHandle send = null;
         try {
-            PcapNetworkInterface pnif = findPnif(iface);
             send = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
             send.sendPacket(UnknownPacket.newPacket(bytes, 0, bytes.length));
         } catch (PcapNativeException | NotOpenException e) {
@@ -82,19 +84,7 @@ public class Pcap {
             throw new RuntimeException(e);
         }
     }
-
-    public interface Listener {
-        void onPacket(byte[] bytes);
-    }
-
-    public static void _muteSlf4j() {
-        // muting slf4j. Override by setting your value for "org.slf4j.simpleLogger.defaultLogLevel"
-        if (!System.getProperties().contains(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
-            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
-        }
-    }
-
-    private static PcapNetworkInterface findPnif(String iface)  {
+    public static PcapNetworkInterface get(String iface)  {
         try {
             for (PcapNetworkInterface dev : Pcaps.findAllDevs())
                 if (iface.equals(dev.getName()))
@@ -107,4 +97,16 @@ public class Pcap {
             throw new RuntimeException(e);
         }
     }
+
+    public interface Listener {
+        void onPacket(byte[] bytes);
+    }
+
+    public static void _muteSlf4j() {
+        // muting slf4j. Override by setting your value for "org.slf4j.simpleLogger.defaultLogLevel"
+        if (!System.getProperties().contains(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
+            System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
+        }
+    }
+
 }
