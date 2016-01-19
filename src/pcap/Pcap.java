@@ -1,7 +1,6 @@
 package pcap;
 
 import org.pcap4j.core.*;
-import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.UnknownPacket;
 
 import java.io.Closeable;
@@ -20,29 +19,42 @@ public class Pcap {
     private static final int COUNT          = 1;
 
     public static Closeable listen(String iface, Listener l) {
-        return listen(iface, null, l);
+        return listen(iface, null, false, l);
     }
     public static Closeable listen(String iface, String filter, Listener l) {
+        return listen(iface, filter, false, l);
+    }
+    public static Closeable listen(String iface, String filter, boolean rfmon, Listener l) {
+        PcapNetworkInterface nif = get(iface);
+
         PcapHandle _recv = null;
         ExecutorService _pool = null;
+        ExecutorService _loop = null;
 
         try {
-            PcapNetworkInterface pnif = get(iface);
+            PcapHandle.Builder phb
+                    = new PcapHandle.Builder(nif.getName())
+                    .snaplen(SNAPLEN)
+                    .promiscuousMode(PcapNetworkInterface.PromiscuousMode.PROMISCUOUS)
+                    .rfmon(rfmon)
+                    .timeoutMillis(READ_TIMEOUT);
+            PcapHandle recv = phb.build();
 
-            PcapHandle recv = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
             _recv = recv;
 
-            if (null != filter)
+            if (filter != null && !filter.equals(""))
                 recv.setFilter(filter, BpfProgram.BpfCompileMode.OPTIMIZE);
 
             ExecutorService pool = Executors.newSingleThreadExecutor();
+            ExecutorService loop = Executors.newCachedThreadPool();
             _pool = pool;
+            _loop = loop;
 
             // pump events
             pool.execute(() -> {
                 try {
                     while (!pool.isShutdown() && recv.isOpen()) {
-                        recv.loop(COUNT, (Packet raw) -> l.onPacket(raw.getRawData()));
+                        recv.loop(COUNT, l::onPacket, loop);
                     }
                 } catch (PcapNativeException | InterruptedException e) {
                     throw new RuntimeException(e);
@@ -52,10 +64,12 @@ public class Pcap {
             });
             return () -> {
                 if (!pool.isShutdown()) pool.shutdown();
+                if (!loop.isShutdown()) loop.shutdown();
                 if (recv.isOpen()) recv.close();
             };
         } catch (Exception e) {
             if (_pool != null) _pool.shutdown();
+            if (_loop != null) _loop.shutdown();
             if (_recv != null && _recv.isOpen()) _recv.close();
             throw new RuntimeException(e);
         }
@@ -64,10 +78,10 @@ public class Pcap {
     public static void send(String iface, byte[] bytes) {
         send(get(iface), bytes);
     }
-    public static void send(PcapNetworkInterface pnif, byte[] bytes) {
+    public static void send(PcapNetworkInterface nif, byte[] bytes) {
         PcapHandle send = null;
         try {
-            send = pnif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
+            send = nif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
             send.sendPacket(UnknownPacket.newPacket(bytes, 0, bytes.length));
         } catch (PcapNativeException | NotOpenException e) {
             throw new RuntimeException(e);

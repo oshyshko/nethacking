@@ -15,10 +15,11 @@ public class Tester {
         AtomicBoolean gotOthers     = new AtomicBoolean();
         AtomicBoolean gotOwn        = new AtomicBoolean();
         AtomicBoolean gotOwnBroken  = new AtomicBoolean();
+        AtomicBoolean rfmonSupported  = new AtomicBoolean();
 
         try {
             Pcap._muteSlf4j();
-            System.out.println("# Pcap Tester 2");
+            System.out.println("# Pcap Tester 3");
 
             for (String k : new String[]{
                     "os.name",
@@ -96,17 +97,22 @@ public class Tester {
 
             System.out.println("Sending...");
             try {
-                Pcap.send(pnif.getName(), packet);
+                Pcap.send(pnif, packet);
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
             System.out.println("Sending (broken)...");
             try {
-                Pcap.send(pnif.getName(), packetBroken);
+                Pcap.send(pnif, packetBroken);
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            System.out.println("Probing RFMON...");
+            try (Closeable ignored = Pcap.listen(pnif.getName(), "", true, (bytes -> { /* do nothing */}))) {
+                rfmonSupported.set(true);
+            };
 
             for (int i = 0; i < 50; i++) {
                 if (gotOthers.get() && gotOwn.get() && gotOwnBroken.get())
@@ -119,16 +125,16 @@ public class Tester {
         } catch (Throwable t) {
             t.printStackTrace();
         } finally {
+
             System.out.println();
-            System.out.println("Intercepted other's packet:      " + gotOthers.get());
-            System.out.println("Intercepted own packet:          " + gotOwn.get());
-            System.out.println("Intercepted own packet (broken): " + gotOwnBroken.get());
+            System.out.println("Intercepted other's packet:        " + gotOthers.get());
+            System.out.println("Intercepted own packet:            " + gotOwn.get());
+            System.out.println("Intercepted own packet (broken):   " + gotOwnBroken.get());
+            System.out.println("Radio Frequency MONitor supported: " + rfmonSupported.get());
             System.out.println();
 
-            if (gotOthers.get() && gotOwn.get() && gotOwnBroken.get()) {
+            if (gotOthers.get() && gotOwn.get()) {
                 System.out.println("OK");
-            } else if (gotOthers.get() && gotOwn.get() && !gotOwnBroken.get()) {
-                System.out.println("OK (your OS doesn't allow sending broken packets, but that's still ok)");
             } else {
                 System.out.println("ERROR");
             }
