@@ -36,8 +36,11 @@ public class Pcap {
                     = new PcapHandle.Builder(nif.getName())
                     .snaplen(SNAPLEN)
                     .promiscuousMode(PcapNetworkInterface.PromiscuousMode.PROMISCUOUS)
-                    .rfmon(rfmon)
                     .timeoutMillis(READ_TIMEOUT);
+
+            if (rfmon)
+                phb.rfmon(true);
+
             PcapHandle recv = phb.build();
 
             _recv = recv;

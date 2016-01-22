@@ -19,7 +19,7 @@ public class Tester {
 
         try {
             Pcap._muteSlf4j();
-            System.out.println("# Pcap Tester 3");
+            System.out.println("# Pcap Tester 4");
 
             for (String k : new String[]{
                     "os.name",
@@ -56,7 +56,7 @@ public class Tester {
             }
 
             System.out.println();
-            System.out.println("NOTE: you may select another interface with: java -jar tester2.jar <interface-number>");
+            System.out.println("NOTE: you can select another interface with: java -jar tester4.jar <interface-number>");
             System.out.println();
 
             byte[] packetBroken = Convert.hex2bytes( // Ethernet packet:

@@ -16,7 +16,7 @@
   <scm>
     <connection>scm:git:git://github.com/oshyshko/nethacking.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/oshyshko/nethacking.git</developerConnection>
-    <tag>0b0726b98c1fe5ce08f84c0c6f8185ce573c38f6
+    <tag>712151da0db951228d0ea0ee813c721f6ad270a8
 </tag>
     <url>https://github.com/oshyshko/nethacking</url>
   </scm>
@@ -89,6 +89,11 @@
     </repository>
   </repositories>
   <dependencies>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>clojure</artifactId>
+      <version>1.7.0</version>
+    </dependency>
     <dependency>
       <groupId>org.pcap4j</groupId>
       <artifactId>pcap4j-core</artifactId>
