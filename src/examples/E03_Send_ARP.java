@@ -8,7 +8,7 @@ import java.io.IOException;
 public class E03_Send_ARP {
 
     public static void main(String[] args) throws IOException {
-        String iface = "en0";
+        String iface = Pcap.getDefault().getName();
 
         // Use the command bellow to see ARP traffic (works like Wireshark):
         // $ sudo tcpdump -ennqti en0 \( arp \)

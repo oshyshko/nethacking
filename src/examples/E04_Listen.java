@@ -9,7 +9,7 @@ import java.io.IOException;
 public class E04_Listen {
 
     public static void main(String[] args) throws IOException {
-        String iface = "en0";
+        String iface = Pcap.getDefault().getName();
 
         System.out.println("Listening...");
 

@@ -11,7 +11,7 @@ import java.util.Arrays;
 public class E05_Listen_and_Send {
 
     public static void main(String[] args) throws IOException {
-        String iface = "en0";
+        String iface = Pcap.getDefault().getName();
 
         System.out.println("Listening...");
 

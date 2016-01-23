@@ -10,7 +10,7 @@ import java.util.Map;
 public class E07_Listen_rfmon {
 
     public static void main(String[] args) throws IOException {
-        String iface = "en0";
+        String iface = Pcap.getDefault().getName();
 
         System.out.println("Listening...");
 

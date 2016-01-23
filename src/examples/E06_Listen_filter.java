@@ -9,7 +9,7 @@ import java.io.IOException;
 public class E06_Listen_filter {
 
     public static void main(String[] args) throws IOException {
-        String iface = "en0";
+        String iface = Pcap.getDefault().getName();
 
         // See: filter syntax at http://linux.die.net/man/7/pcap-filter
         //      or run $ man pcap-filter

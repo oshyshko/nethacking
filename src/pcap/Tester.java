@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Tester {
+    private static final String VERSION = "5";
+
     public static void main(String[] args) throws PcapNativeException, IOException {
         AtomicBoolean gotOthers     = new AtomicBoolean();
         AtomicBoolean gotOwn        = new AtomicBoolean();
@@ -19,7 +21,7 @@ public class Tester {
 
         try {
             Pcap._muteSlf4j();
-            System.out.println("# Pcap Tester 4");
+            System.out.println("# Pcap Tester " + VERSION);
 
             for (String k : new String[]{
                     "os.name",
@@ -40,11 +42,25 @@ public class Tester {
                 return;
             }
 
-            PcapNetworkInterface pnif = args.length == 0
-                    ? Pcaps.findAllDevs().get(0)
-                    : Pcaps.findAllDevs().get((Integer.parseInt(args[0]) - 1));
+            PcapNetworkInterface pnif;
 
-            System.out.println("Found interfaces:");
+            if (args.length != 0) {
+                pnif = Pcaps.findAllDevs().get((Integer.parseInt(args[0]) - 1));
+            } else {
+                System.out.println("Guessing default interface...");
+                System.out.println();
+                try {
+                    pnif = Pcap.getDefault();
+                } catch (Exception e) {
+                    e.printStackTrace(System.out);
+                    System.out.println();
+                    System.out.println("Got an exception, selecting the first interface.");
+                    System.out.println();
+
+                    pnif = Pcaps.findAllDevs().get(0);
+                }
+            }
+
             List<PcapNetworkInterface> pnifs = Pcaps.findAllDevs();
             for (int i = 0; i < pnifs.size(); i++) {
                 PcapNetworkInterface p = pnifs.get(i);
@@ -56,7 +72,7 @@ public class Tester {
             }
 
             System.out.println();
-            System.out.println("NOTE: you can select another interface with: java -jar tester4.jar <interface-number>");
+            System.out.println("NOTE: you can select another interface with: java -jar tester" + VERSION + ".jar <interface-number>");
             System.out.println();
 
             byte[] packetBroken = Convert.hex2bytes( // Ethernet packet:
@@ -99,14 +115,14 @@ public class Tester {
             try {
                 Pcap.send(pnif, packet);
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
 
             System.out.println("Sending (broken)...");
             try {
                 Pcap.send(pnif, packetBroken);
             } catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(System.out);
             }
 
             System.out.println("Probing RFMON...");

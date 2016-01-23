@@ -20,5 +20,12 @@ public class E01_Interfaces {
                     "IPs:  " + dev.getAddresses() + "\n" +
                     "MACs: " + dev.getLinkLayerAddresses() + "\n");
         }
+
+        try {
+            System.out.println("Default network interface: " + Pcap.getDefault().getName());
+        } catch (Exception e) {
+            System.out.println("Can't get default network interface");
+            e.printStackTrace();
+        }
     }
 }

@@ -4,6 +4,8 @@ import org.pcap4j.core.*;
 import org.pcap4j.packet.UnknownPacket;
 
 import java.io.Closeable;
+import java.io.IOException;
+import java.net.*;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -115,12 +117,23 @@ public class Pcap {
         }
     }
 
+    public static PcapNetworkInterface getDefault() {
+        try (Socket s = new Socket()) {
+            s.connect(new InetSocketAddress("www.google.com", 80), 3000);
+            s.getOutputStream().write(new byte[]{1, 2, 3});
+
+            return get(NetworkInterface.getByInetAddress(s.getLocalAddress()).getDisplayName());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public interface Listener {
         void onPacket(byte[] bytes);
     }
 
     public static void _muteSlf4j() {
-        // muting slf4j. Override by setting your value for "org.slf4j.simpleLogger.defaultLogLevel"
+        // override by adding "java -Dorg.slf4j.simpleLogger.defaultLogLevel=INFO"
         if (!System.getProperties().contains(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
             System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
         }
