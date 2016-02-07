@@ -18,7 +18,7 @@ public class Test_Convert {
         Assert.assertThat("ff fe fd", IsEqual.equalTo(Convert.bytes2hex(new byte[]{-1, -2, -3})));
         Assert.assertThat("01 02 03", IsEqual.equalTo(Convert.bytes2hex(new byte[]{1, 2, 3})));
 
-        Assert.assertThat(new byte[]{  1,  2,  3}, IsEqual.equalTo(Convert.fromDec("1 2 3")));
-        Assert.assertThat(new byte[]{ -1, -2, -3}, IsEqual.equalTo(Convert.fromDec("255 254 253")));
+        Assert.assertThat(new byte[]{  1,  2,  3}, IsEqual.equalTo(Convert.dec2bytes("1 2 3")));
+        Assert.assertThat(new byte[]{ -1, -2, -3}, IsEqual.equalTo(Convert.dec2bytes("255 254 253")));
     }
 }

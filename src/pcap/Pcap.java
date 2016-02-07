@@ -59,7 +59,7 @@ public class Pcap {
             pool.execute(() -> {
                 try {
                     while (!pool.isShutdown() && recv.isOpen()) {
-                        recv.loop(COUNT, l::onPacket, loop);
+                        recv.loop(COUNT, l::onPacket);
                     }
                 } catch (PcapNativeException | InterruptedException e) {
                     throw new RuntimeException(e);

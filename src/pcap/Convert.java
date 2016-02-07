@@ -29,7 +29,7 @@ public class Convert {
         return baos.toByteArray();
     }
 
-    public static byte[] fromDec(String... ss) {
+    public static byte[] dec2bytes(String... ss) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         for (String s : ss) {
             Matcher m = DEC.matcher(s);
@@ -41,7 +41,7 @@ public class Convert {
     }
 
     public static String dec2hex(String... ss) {
-        return bytes2hex(fromDec(ss));
+        return bytes2hex(dec2bytes(ss));
     }
 
 }
