@@ -61,22 +61,30 @@ public class Pcap {
                     while (!pool.isShutdown() && recv.isOpen()) {
                         recv.loop(COUNT, l::onPacket);
                     }
-                } catch (PcapNativeException | InterruptedException e) {
+                } catch (PcapNativeException e) {
                     throw new RuntimeException(e);
-                } catch (NotOpenException e) {
+                } catch (NotOpenException | InterruptedException e) {
                     // do nothing
                 }
             });
-            return () -> {
-                if (!pool.isShutdown()) pool.shutdown();
-                if (!loop.isShutdown()) loop.shutdown();
-                if (recv.isOpen()) recv.close();
-            };
+            return () -> _close(recv, pool, loop);
         } catch (Exception e) {
-            if (_pool != null) _pool.shutdown();
-            if (_loop != null) _loop.shutdown();
-            if (_recv != null && _recv.isOpen()) _recv.close();
+            _close(_recv, _pool, _loop);
             throw new RuntimeException(e);
+        }
+    }
+
+    private static void _close(PcapHandle _recv, ExecutorService _pool, ExecutorService _loop) {
+        if (_pool != null) _pool.shutdown();
+        if (_loop != null) _loop.shutdown();
+        if (_recv != null && _recv.isOpen()) {
+            try {
+                _recv.breakLoop();
+                Threads.sleep(1000);
+            } catch (NotOpenException e) {
+                // nothing
+            }
+            _recv.close();
         }
     }
 
@@ -134,7 +142,7 @@ public class Pcap {
 
     public static void _muteSlf4j() {
         // override by adding "java -Dorg.slf4j.simpleLogger.defaultLogLevel=INFO"
-        if (!System.getProperties().contains(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
+        if (!System.getProperties().containsKey(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY)) {
             System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "ERROR");
         }
     }
