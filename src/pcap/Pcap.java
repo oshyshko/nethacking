@@ -1,7 +1,6 @@
 package pcap;
 
 import org.pcap4j.core.*;
-import org.pcap4j.packet.UnknownPacket;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -95,7 +94,7 @@ public class Pcap {
         PcapHandle send = null;
         try {
             send = nif.openLive(SNAPLEN, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, READ_TIMEOUT);
-            send.sendPacket(UnknownPacket.newPacket(bytes, 0, bytes.length));
+            send.sendPacket(bytes);
         } catch (PcapNativeException | NotOpenException e) {
             throw new RuntimeException(e);
         } finally {

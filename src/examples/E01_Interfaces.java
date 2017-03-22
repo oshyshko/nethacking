@@ -5,7 +5,7 @@ import pcap.Pcap;
 
 public class E01_Interfaces {
     public static void main(String[] args) {
-        // Use the command bellow to see available interfaces in your OS:
+        // Use the command below to see available interfaces in your OS:
         // $ ifconfig -a
         //
         // On Windows, use:
@@ -24,7 +24,7 @@ public class E01_Interfaces {
         try {
             System.out.println("Default network interface: " + Pcap.getDefault().getName());
         } catch (Exception e) {
-            System.out.println("Can't get default network interface");
+            System.out.println("Couldn't get default network interface");
             e.printStackTrace();
         }
     }

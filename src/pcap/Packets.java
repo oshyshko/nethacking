@@ -12,7 +12,7 @@ public class Packets {
 
         int radiotap_length = bs[2] + bs[3] * 256; // little-endian
 
-        // NOTE: the dump of example packet used in comments bellow
+        // NOTE: the dump of example packet used in comments below
         //       can be found in pcap.Test_Packets/test()
 
         // ----- Radiotap Header v0, Length 25

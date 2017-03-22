@@ -10,7 +10,7 @@ public class E03_Send_ARP {
     public static void main(String[] args) throws IOException {
         String iface = Pcap.getDefault().getName();
 
-        // Use the command bellow to see ARP traffic (works like Wireshark):
+        // Use the command below to see ARP traffic (works like Wireshark):
         // $ sudo tcpdump -ennqti en0 \( arp \)
 
         String sourceMac = Convert.bytes2hex(Pcap.get(iface).getLinkLayerAddresses().get(0).getAddress());
