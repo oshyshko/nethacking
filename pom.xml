@@ -5,8 +5,8 @@
   <packaging>jar</packaging>
   <version>0.1.0-SNAPSHOT</version>
   <name>nethacking</name>
-  <description>FIXME: write description</description>
-  <url>http://example.com/FIXME</url>
+  <description>Nethacking</description>
+  <url>https://github.com/oshyshko/nethacking</url>
   <licenses>
     <license>
       <name>Eclipse Public License</name>
@@ -16,7 +16,7 @@
   <scm>
     <connection>scm:git:git://github.com/oshyshko/nethacking.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/oshyshko/nethacking.git</developerConnection>
-    <tag>712151da0db951228d0ea0ee813c721f6ad270a8
+    <tag>6c3007ddfdc678de9f77bf7c21d97c4e5e2068aa
 </tag>
     <url>https://github.com/oshyshko/nethacking</url>
   </scm>
@@ -39,7 +39,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.3</version>
+        <version>3.6.1</version>
         <configuration>
           <source>1.8</source>
           <target>1.8</target>
@@ -88,21 +88,24 @@
       </releases>
     </repository>
   </repositories>
+  <dependencyManagement>
+    <dependencies/>
+  </dependencyManagement>
   <dependencies>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
-      <version>1.7.0</version>
+      <version>1.8.0</version>
     </dependency>
     <dependency>
       <groupId>org.pcap4j</groupId>
       <artifactId>pcap4j-core</artifactId>
-      <version>1.6.2</version>
+      <version>1.7.0</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.25</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
