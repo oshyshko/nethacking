@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Tester {
-    private static final String VERSION = "5";
+    private static final String VERSION = "6";
 
     public static void main(String[] args) throws PcapNativeException, IOException {
         AtomicBoolean gotOthers     = new AtomicBoolean();
@@ -19,23 +19,11 @@ public class Tester {
         AtomicBoolean gotOwnBroken  = new AtomicBoolean();
         AtomicBoolean rfmonSupported  = new AtomicBoolean();
 
+        String pnifName = "";
+
         try {
             Pcap._muteSlf4j();
             System.out.println("# Pcap Tester " + VERSION);
-
-            for (String k : new String[]{
-                    "os.name",
-                    "os.version",
-                    "java.runtime.version",
-                    "java.vendor",
-                    "java.vm.name",
-                    "sun.arch.data.model",
-                    "sun.java.command",})
-                System.out.println(k + " = " + System.getProperty(k));
-
-            System.out.println();
-            System.out.println("Pcap library: " + Pcaps.libVersion());
-            System.out.println();
 
             if (Pcaps.findAllDevs().isEmpty()) {
                 System.out.println("No interfaces found. Try running with \"sudo\".");
@@ -60,6 +48,9 @@ public class Tester {
                     pnif = Pcaps.findAllDevs().get(0);
                 }
             }
+
+
+            pnifName = pnif.getName();
 
             List<PcapNetworkInterface> pnifs = Pcaps.findAllDevs();
             for (int i = 0; i < pnifs.size(); i++) {
@@ -142,18 +133,41 @@ public class Tester {
             t.printStackTrace();
         } finally {
 
+            String result = gotOthers.get() && gotOwn.get() ? "OK" : "ERROR";
+
             System.out.println();
-            System.out.println("Intercepted other's packet:        " + gotOthers.get());
-            System.out.println("Intercepted own packet:            " + gotOwn.get());
-            System.out.println("Intercepted own packet (broken):   " + gotOwnBroken.get());
-            System.out.println("Radio Frequency MONitor supported: " + rfmonSupported.get());
+            System.out.println("# Test results");
+            for (String k : new String[]{
+                    "os.name",
+                    "os.version",
+                    "java.runtime.version",})
+                System.out.println(String.format("%-33s = %s", k, System.getProperty(k)));
+            System.out.println("Pcap library                      = " + Pcaps.libVersion());
+            System.out.println("Intercepted other's packet        = " + gotOthers.get());
+            System.out.println("Intercepted own packet            = " + gotOwn.get());
+            System.out.println("Intercepted own packet (broken)   = " + gotOwnBroken.get());
+            System.out.println("Radio Frequency MONitor supported = " + rfmonSupported.get());
+            System.out.println(result);
             System.out.println();
 
-            if (gotOthers.get() && gotOwn.get()) {
-                System.out.println("OK");
-            } else {
-                System.out.println("ERROR");
-            }
+            System.out.println();
+            System.out.println("Copy and paste this line to Google Sheets:");
+            System.out.println("============================================================================================================================");
+            for (String k : new String[]{
+                    "os.name",
+                    "os.version",
+                    "java.runtime.version",})
+                System.out.print(System.getProperty(k) + "\t");
+            System.out.print(Pcaps.libVersion());
+            System.out.print("\t" + pnifName);
+            System.out.print("\t" + gotOthers.get());
+            System.out.print("\t" + gotOwn.get());
+            System.out.print("\t" + gotOwnBroken.get());
+            System.out.print("\t" + rfmonSupported.get());
+            System.out.print("\t" + result);
+            System.out.println();
+            System.out.println("============================================================================================================================");
+            System.out.println();
 
             System.exit(0);
         }
