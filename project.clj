@@ -12,6 +12,7 @@
   :java-source-paths ["src"]
 
   :main         pcap.Tester
+  :uberjar-name "tester6.jar"
 
   ; A trick to stop IntelliJ reseting compiler/module version to "1.5" after "lein pom"
   :pom-plugins [[org.apache.maven.plugins/maven-compiler-plugin "3.6.1"
